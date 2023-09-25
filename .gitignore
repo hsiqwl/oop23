@@ -2,3 +2,7 @@ build/
 cmake-build-debug/
 main
 *.o
+*.xml
+*.iml
+*.name
+
