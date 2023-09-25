@@ -5,4 +5,5 @@ main
 *.xml
 *.iml
 *.name
-
+*.idea/
+misc.xml

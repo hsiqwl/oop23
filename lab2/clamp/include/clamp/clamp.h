@@ -55,9 +55,9 @@ namespace clamp_class {
 
         Clamp operator -- (int);
 
-        void operator >> (Clamp& in_clamp);
+        void operator >> (Clamp&);
 
-        void operator << (Clamp& in_clamp);
+        void operator << (Clamp&);
     };
 }
 

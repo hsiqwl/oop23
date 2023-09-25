@@ -41,8 +41,12 @@ namespace clamp_class {
     Clamp& Clamp::set_status(signal signal_status) {
          if(signal_status < 0 || signal_status>2)
              throw clamp_exception("incorrect value of signal status");
-         else
-             status = signal_status;
+         else {
+             if (link_num != 0)
+                 status = signal_status;
+             else
+                 throw clamp_exception("can't have non undefined signal on this clamp");
+         }
          return (*this);
      }
 
@@ -87,17 +91,18 @@ namespace clamp_class {
      }
 
      Clamp& Clamp::operator++() { //prefix
-         if(link_num<3){
-             link_num++;
-             return (*this);
-         }else
+         if(type == in && link_num > 0){
              throw clamp_exception("trying to have too many links");
+         if(type == out && link_num > 2)
+             throw clamp_exception("trying to have too many links");
+         ++link_num;
+         return (*this);
      }
 
      Clamp& Clamp::operator--() {
          if(link_num>0){
              link_num--;
-             if(!link_num && type == in)
+             if(!link_num)
                  status = undefined;
              return (*this);
          }
@@ -107,18 +112,19 @@ namespace clamp_class {
 
      Clamp Clamp::operator++(int) { //postfix
         Clamp copy = (*this);
-         if(link_num<3){
-             link_num++;
-             return copy;
-         }else
+         if(type == in && link_num > 0)
              throw clamp_exception("trying to have too many links");
+         if(type == out && link_num > 2)
+             throw clamp_exception("trying to have too many links");
+         ++link_num;
+         return copy;
      }
 
     Clamp Clamp::operator--(int) {
         Clamp copy = (*this);
         if(link_num>0){
             link_num--;
-            if(!link_num && type == in)
+            if(!link_num)
                 status = undefined;
             return copy;
         }else
