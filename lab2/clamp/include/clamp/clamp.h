@@ -31,7 +31,7 @@ namespace clamp_class {
 
         Clamp(clamp_type, signal, unsigned short);
 
-        explicit Clamp(clamp_type);
+        explicit  Clamp(clamp_type);
 
         Clamp& set_type(clamp_type);
 
@@ -45,7 +45,7 @@ namespace clamp_class {
 
         [[nodiscard]] int get_link_num() const noexcept;
 
-        void print(std::ostream&) const noexcept;
+        void print(std::ostream&) noexcept;
 
         Clamp& operator ++ ();
 
@@ -58,7 +58,12 @@ namespace clamp_class {
         void operator >> (Clamp&);
 
         void operator << (Clamp&);
+
+        void operator ! ();
     };
+
+    std::ostream& operator << (std::ostream& s, Clamp& obj);
+    std::ostream& operator >> (std::istream& s, Clamp& obj);
 }
 
 #endif //LAB2_CLAMP_H

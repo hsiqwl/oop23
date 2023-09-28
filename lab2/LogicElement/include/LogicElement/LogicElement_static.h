@@ -1,6 +1,6 @@
 #ifndef DIALOGUE_LOGICELEMENT_H
 #define DIALOGUE_LOGICELEMENT_H
-#include <clamp/clamp.h>
+#include "clamp/clamp.h"
 #include <exception>
 #include <string>
 using namespace clamp_class;

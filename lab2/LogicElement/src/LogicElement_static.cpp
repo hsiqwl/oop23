@@ -1,6 +1,6 @@
 #include "LogicElement/LogicElement_static.h"
 #include "clamp/clamp.h"
-
+#include <iostream>
 using namespace clamp_class;
 namespace LogicElementClass{
 
@@ -64,7 +64,10 @@ namespace LogicElementClass{
                 break;
             }
         }
-        (++arr[pos_out]) >> (++obj.arr[pos_in]);
+        if(pos_in!=-1 && pos_out!=-1)
+            (++arr[pos_out]) >> (++obj.arr[pos_in]);
+        else
+            throw LogicElementException("can't link elements");
     }
 
     Clamp& LogicElement::operator[](unsigned int index) {

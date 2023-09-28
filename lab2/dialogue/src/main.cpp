@@ -8,6 +8,7 @@ using std::cin;
 using std::cout;
 using namespace dialog;
  int main(){
+     Clamp obj;
      try {
          cout << "let's init our object\n";
          cout << "enter type(0 - in, 1 - out), status(0 - low, 1 - high, 2 - undefined) and link_num:";

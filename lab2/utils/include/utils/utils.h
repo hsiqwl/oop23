@@ -4,17 +4,17 @@
 #include <limits>
 namespace utils{
     template<class T>
-    T getNum(T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()) {
+    T getNum(std::istream& s, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()) {
         T number;
         while (true) {
-            std::cin >> number;
-            if (std::cin.eof())
+            s >> number;
+            if (s.eof())
                 throw std::runtime_error("It is EOF, sorry\n");
-            else if (std::cin.bad())
+            else if (s.bad())
                 throw std::runtime_error("BAD!\n");
-            else if (std::cin.fail() || number < min || number > max) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            else if (s.fail() || number < min || number > max) {
+                s.clear();
+                s.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 std::cout << "You are wrong; repeat please!" << std::endl;
             } else return number;
         }
