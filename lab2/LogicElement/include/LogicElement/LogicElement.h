@@ -3,6 +3,7 @@
 #include "clamp/clamp.h"
 #include <exception>
 #include <string>
+#include <compare>
 using namespace clamp_class;
 
 namespace LogicElementClass {
@@ -27,6 +28,14 @@ namespace LogicElementClass {
 
         ~LogicElement(){delete[] arr;};
 
+        [[nodiscard]] size_t get_curr_size() const {return curr_size;};
+
+        [[nodiscard]] size_t get_max_size() const {return max_size;};
+
+        [[nodiscard]] size_t get_num_of_in() const;
+
+        [[nodiscard]] size_t get_num_of_out() const;
+
         LogicElement(LogicElement&&) noexcept;
 
         LogicElement &reset_signals(signal*, size_t);
@@ -41,9 +50,10 @@ namespace LogicElementClass {
 
         LogicElement& operator = (LogicElement&&) noexcept;
 
+        std::weak_ordering operator <=>(const LogicElement& obj) const;
     };
 
-}
+};
 
 
 #endif

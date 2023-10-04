@@ -2,6 +2,7 @@
 #include "clamp/clamp.h"
 #include <iostream>
 #include <utility>
+#include <compare>
 using namespace clamp_class;
 namespace LogicElementClass{
 
@@ -28,6 +29,24 @@ namespace LogicElementClass{
         arr = new Clamp[arr_len];
         max_size = curr_size = arr_len;
         std::copy(array, array + arr_len, arr);
+    }
+
+    size_t LogicElement::get_num_of_in() const {
+        size_t num_of_in = 0;
+        for(size_t i = 0; i < curr_size;++i){
+            if(arr[i].get_type() == in)
+                num_of_in++;
+        }
+        return num_of_in;
+    }
+
+    size_t LogicElement::get_num_of_out() const {
+        size_t num_of_out = 0;
+        for(size_t i = 0; i < curr_size;++i){
+            if(arr[i].get_type() == out)
+                num_of_out++;
+        }
+        return num_of_out;
     }
 
     LogicElement::LogicElement(const LogicElement &obj){
@@ -115,5 +134,16 @@ namespace LogicElementClass{
             throw std::out_of_range("index is out of range");
         else
             return arr[index];
+    }
+
+    std::weak_ordering LogicElement::operator <=>(const LogicElement& obj) const{
+        size_t a = this->get_num_of_in();
+        size_t b = obj.get_num_of_in();
+        if(a > b)
+            return std::weak_ordering::greater;
+        else if (a < b)
+            return std::weak_ordering::less;
+        else
+            return std::weak_ordering::equivalent;
     }
 }
