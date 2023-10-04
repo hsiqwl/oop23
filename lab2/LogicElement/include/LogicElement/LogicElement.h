@@ -1,5 +1,5 @@
-#ifndef DIALOGUE_LOGICELEMENT_H
-#define DIALOGUE_LOGICELEMENT_H
+#ifndef LOGICELEMENT_H
+#define LOGICELEMENT_H
 #include "clamp/clamp.h"
 #include <exception>
 #include <string>
@@ -7,44 +7,35 @@ using namespace clamp_class;
 
 namespace LogicElementClass {
 
-    class LogicElementException : public std::exception {
-    private:
-        std::string message;
-    public:
-        explicit LogicElementException(const std::string &msg) : message{msg} {}
-
-        const std::string &info() { return message; }
-    };
-
     class LogicElement {
     private:
         static const unsigned int resize_var = 10;
-        unsigned int curr_size;
-        unsigned int max_size;
+        size_t curr_size;
+        size_t max_size;
         Clamp* arr;
 
-        void resize_arr(unsigned int);
+        void resize_arr(size_t);
 
     public:
         LogicElement() = default;
 
-        LogicElement(unsigned int, unsigned int);
+        LogicElement(size_t, size_t);
 
-        LogicElement(Clamp*, unsigned int);
+        LogicElement(Clamp*, size_t);
 
         LogicElement(const LogicElement&);
 
-        ~LogicElement(){delete[] arr};
+        ~LogicElement(){delete[] arr;};
 
         LogicElement(LogicElement&&) noexcept;
 
-        LogicElement &reset_signals(signal*, unsigned int);
+        LogicElement &reset_signals(signal*, size_t);
 
         LogicElement &add_clamp(Clamp&);
 
-        void operator>>(LogicElement&);
+        void operator>>(LogicElement&) const;
 
-        Clamp &operator[](unsigned);
+        Clamp &operator[](size_t) const;
 
         LogicElement& operator = (const LogicElement&);
 
@@ -55,4 +46,4 @@ namespace LogicElementClass {
 }
 
 
-#endif //DIALOGUE_LOGICELEMENT_H
+#endif

@@ -79,7 +79,7 @@ namespace dialog{
     }
 
     void connect(Clamp &obj) {
-        if (strcmp(obj.get_type() ,"in") == 0) {
+        if (obj.get_type() == in) {
             Clamp new_obj(out);
             cout << "made new object\n";
             cout << "printing two objects before >>:";
@@ -103,7 +103,7 @@ namespace dialog{
     }
 
     void disconnect(Clamp &obj) {
-        if (strcmp(obj.get_type() ,"in") == 0) {
+        if (obj.get_type() == in) {
             Clamp new_obj(out);
             cout << "made new object\n";
             cout << "printing two objects before >>:";

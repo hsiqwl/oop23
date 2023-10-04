@@ -9,24 +9,13 @@ namespace clamp_class {
         low, high, undefined
     };
 
-    class clamp_exception: public std::exception{
-    private:
-        std::string message;
-    public:
-        explicit clamp_exception(const std::string& msg){
-            message = msg;
-        }
-        std::string& exception_info(){
-            return message;
-        }
-    };
-
     class Clamp {
     private:
         clamp_type type;
         signal status;
         unsigned short link_num;
     public:
+
         Clamp();
 
         Clamp(clamp_type, signal, unsigned short);
@@ -39,13 +28,13 @@ namespace clamp_class {
 
         Clamp& set_link_num(unsigned short);
 
-        [[nodiscard]] const char* get_type() const noexcept;
+        [[nodiscard]] clamp_type get_type() const noexcept;
 
-        [[nodiscard]] const char* get_signal() const noexcept;
+        [[nodiscard]] signal get_signal() const noexcept;
 
         [[nodiscard]] int get_link_num() const noexcept;
 
-        void print(std::ostream&) noexcept;
+        void print(std::ostream&) const noexcept;
 
         Clamp& operator ++ ();
 
@@ -62,8 +51,7 @@ namespace clamp_class {
         void operator ! ();
     };
 
-    std::ostream& operator << (std::ostream& s, Clamp& obj);
-    std::ostream& operator >> (std::istream& s, Clamp& obj);
+    std::ostream& operator << (std::ostream& s, Clamp& obj);\
 }
 
 #endif //LAB2_CLAMP_H
