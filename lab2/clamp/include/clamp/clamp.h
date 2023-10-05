@@ -2,20 +2,25 @@
 #define LAB2_CLAMP_H
 #include <string>
 namespace clamp_class {
+    ///Types that an object of a class can take
     enum clamp_type {
-        in, out
+        in,
+        out
     };
+    ///Types of signals that an object can take
     enum signal {
-        low, high, undefined
+        low,
+        high,
+        undefined
     };
 
+    ///Clamp is a class that contains three fields fully describing an object
     class Clamp {
     private:
         clamp_type type;
         signal status;
-        unsigned short link_num;
+        unsigned short link_num; ///number of other objects to which this object is connected
     public:
-
         Clamp();
 
         Clamp(clamp_type, signal, unsigned short);
@@ -51,7 +56,8 @@ namespace clamp_class {
         void operator ! ();
     };
 
-    std::ostream& operator << (std::ostream& s, Clamp& obj);\
+    std::ostream& operator << (std::ostream& s, Clamp& obj);
+
 }
 
 #endif //LAB2_CLAMP_H

@@ -1,0 +1,5 @@
+find_package(Catch2 2 REQUIRED)
+add_compile_options(--coverage)
+add_link_options(--coverage)
+add_executable(tests tests.cpp)
+target_link_libraries(tests Clamp LogicElement Catch2::Catch2)

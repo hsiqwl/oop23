@@ -18,7 +18,7 @@ namespace LogicElementClass {
         void resize_arr(size_t);
 
     public:
-        LogicElement() = default;
+        LogicElement(): curr_size{0}, max_size{0}, arr{nullptr}{} ;
 
         LogicElement(size_t, size_t);
 
@@ -36,9 +36,11 @@ namespace LogicElementClass {
 
         [[nodiscard]] size_t get_num_of_out() const;
 
+        [[nodiscard]] Clamp* get_ptr() const {return arr;};
+
         LogicElement(LogicElement&&) noexcept;
 
-        LogicElement &reset_signals(signal*, size_t);
+        LogicElement &reset_signals(clamp_class::signal*, size_t);
 
         LogicElement &add_clamp(Clamp&);
 
