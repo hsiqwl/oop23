@@ -131,6 +131,7 @@ namespace clamp_class {
         ++link_num;
         return (*this);
     }
+
     /*!
      @throws std::logic_error in case of decreasing the number of links to a negative number
      @returns reference to an object after the change
@@ -206,9 +207,11 @@ namespace clamp_class {
     /*!
        @throws std::logic_error in case of reversing an undefined signal
     */
-    void Clamp::operator!() {
-        if (status != undefined)
-            status = static_cast<signal>(!(static_cast<int>(status)));
+    Clamp Clamp::operator!() {
+        if (status != undefined) {
+            Clamp a(type, <static_cast<signal>(!static_cast<int>(status)));
+            return a;
+        }
         else
             throw std::logic_error("can't reverse undefined signal");
     }
@@ -221,6 +224,40 @@ namespace clamp_class {
     std::ostream& operator << (std::ostream& s, const Clamp& obj){
         obj.print(s);
         return s;
+    }
+
+    Clamp Clamp::operator + (const Clamp& obj) const {
+        if(type==obj.get_type()) {
+            if (status == obj.get_signal()) {
+                Clamp a(type, status, 0);
+                return a;
+            } else if (status != undefined && obj.get_signal() != undefined) {
+                Clamp a(type, high, 0);
+                return a;
+            }
+            else {
+                Clamp a(type, undefined, 0);
+                return a;
+            }
+        }
+        else
+            throw std::logic_error("can't add different types");
+    }
+
+    Clamp& Clamp::operator += (const Clamp& obj){
+        if(type==obj.get_type()) {
+            if (status == obj.get_signal())
+                return *this;
+            else if (status != undefined && obj.get_signal() != undefined) {
+                status == high;
+                return *this;
+            } else {
+                status = undefined;
+                return *this;
+            };
+        }
+        else
+            throw std::logic_error("can't add different types");
     }
 }
 

@@ -25,7 +25,7 @@ namespace clamp_class {
 
         Clamp(clamp_type, signal, unsigned short);
 
-        explicit  Clamp(clamp_type);
+        explicit Clamp(clamp_type);
 
         Clamp& set_type(clamp_type);
 
@@ -53,7 +53,11 @@ namespace clamp_class {
 
         void operator << (Clamp&);
 
-        void operator ! ();
+        Clamp operator ! ();
+
+        Clamp operator + (const Clamp& obj) const;
+
+        Clamp& operator += (const Clamp& obj);
     };
 
     std::ostream& operator << (std::ostream& s, Clamp& obj);

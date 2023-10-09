@@ -200,4 +200,35 @@ namespace LogicElementClass{
         else
             return std::weak_ordering::equivalent;
     }
+
+    std::ostream& operator << (std::ostream& s,const LogicElement& obj){
+        s << "curr_size:" << obj.curr_size << "max_size:" << obj.max_size << '\n';
+        for(int i = 0; i < obj.curr_size; ++i){
+            obj.arr[i].print(s);
+            s << '\n';
+        }
+        return s;
+    }
+
+    std::istream& operator >> (std::istream& s, LogicElement& obj){
+        size_t num_of_in;
+        size_t num_of_out;
+        s >> num_of_in >> num_of_out;
+        if(s.good()){
+            if(num_of_in < 0 || num_of_out < 0){
+                s.setstate(std::ios::failbit);
+            }else {
+                delete[] obj.arr;
+                obj.max_size = obj.curr_size = num_of_out + num_of_in;
+                obj.arr = new Clamp[obj.max_size];
+                for(size_t i = 0; i < num_of_in; ++i){
+                    obj.arr[i] = Clamp(in);
+                }
+                for(size_t i = num_of_in; i < obj.max_size; ++i){
+                    obj.arr[i] = Clamp(out);
+                }
+            }
+        }
+        return s;
+    }
 }

@@ -53,7 +53,13 @@ namespace LogicElementClass {
         LogicElement& operator = (LogicElement&&) noexcept;
 
         std::weak_ordering operator <=>(const LogicElement& obj) const;
+
+        friend std::ostream& operator << (std::ostream& s, const LogicElement& obj);
+
+        friend std::istream& operator >> (std::istream& s, LogicElement& obj);
     };
+
+
 
 };
 
