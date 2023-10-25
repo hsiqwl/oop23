@@ -7,3 +7,4 @@ main
 *.name
 .idea/
 misc.xml
+*.mdj

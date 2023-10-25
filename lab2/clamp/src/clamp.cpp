@@ -209,7 +209,7 @@ namespace clamp_class {
     */
     Clamp Clamp::operator!() {
         if (status != undefined) {
-            Clamp a(type, <static_cast<signal>(!static_cast<int>(status)));
+            Clamp a(type, static_cast<signal>(!static_cast<int>(status)), link_num);
             return a;
         }
         else
@@ -229,14 +229,14 @@ namespace clamp_class {
     Clamp Clamp::operator + (const Clamp& obj) const {
         if(type==obj.get_type()) {
             if (status == obj.get_signal()) {
-                Clamp a(type, status, 0);
+                Clamp a(type, status, 1);
                 return a;
             } else if (status != undefined && obj.get_signal() != undefined) {
-                Clamp a(type, high, 0);
+                Clamp a(type, high, 1);
                 return a;
             }
             else {
-                Clamp a(type, undefined, 0);
+                Clamp a(type, undefined, 1);
                 return a;
             }
         }

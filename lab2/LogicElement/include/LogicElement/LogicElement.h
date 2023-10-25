@@ -46,7 +46,9 @@ namespace LogicElementClass {
 
         void operator>>(LogicElement&) const;
 
-        Clamp &operator[](size_t) const;
+        Clamp &operator[](size_t);
+
+        const Clamp& operator[](size_t) const;
 
         LogicElement& operator = (const LogicElement&);
 

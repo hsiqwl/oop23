@@ -118,12 +118,12 @@ TEST_CASE("operators") {
     }SECTION("! operator")
     {
         Clamp a(out, high, 3);
-        !a;
-        REQUIRE(a.get_signal() == low);
-        !a;
-        REQUIRE(a.get_signal() == high);
-        a.set_status(undefined);
-        REQUIRE_THROWS(!a);
+        Clamp b = !a;
+        REQUIRE(b.get_signal() == low);
+        b = !b;
+        REQUIRE(b.get_signal() == high);
+        b.set_status(undefined);
+        REQUIRE_THROWS(!b);
     }
 }
 
@@ -222,6 +222,10 @@ TEST_CASE("LogicElement operators"){
         REQUIRE(c.get_type() == in);
         REQUIRE(c.get_signal() == undefined);
         REQUIRE(c.get_link_num() == 0);
+        Clamp d;
+        a.add_clamp(d);
+        REQUIRE(a[a.get_curr_size() - 1].get_link_num() == 0);
+        const Clamp e = a[0];
     }SECTION("operator <=>"){
         LogicElement a{2,3};
         LogicElement b{3,2};

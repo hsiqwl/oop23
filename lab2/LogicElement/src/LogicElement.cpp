@@ -179,7 +179,14 @@ namespace LogicElementClass{
      @throws std::out_of_range in case of index being out of range of an array length
      @returns reference to Clamp type object
     */
-    Clamp& LogicElement::operator[](size_t index) const {
+    Clamp& LogicElement::operator[](size_t index) {
+        if(index >= curr_size)
+            throw std::out_of_range("index is out of range");
+        else
+            return arr[index];
+    }
+
+    const Clamp& LogicElement::operator[](size_t index) const{
         if(index >= curr_size)
             throw std::out_of_range("index is out of range");
         else
