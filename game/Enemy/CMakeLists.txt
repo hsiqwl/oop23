@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.26)
+project(enemy)
+
+set(CMAKE_CXX_STANDARD 20)
+add_compile_options(-g --coverage -fsanitize=thread)
+add_link_options(--coverage -fsanitize=thread)
+
+add_library(Enemy STATIC Base_Enemy/src/Enemy.cpp)
+add_library(Undead STATIC Undead/src/Undead.cpp)
+add_library(Golem STATIC Golem/src/Golem.cpp)
+add_library(Living STATIC Living/src/Living.cpp)
+
+target_include_directories(Enemy PUBLIC Base_Enemy/include)
+target_include_directories(Undead PUBLIC Undead/include)
+target_include_directories(Golem PUBLIC Golem/include)
+target_include_directories(Living PUBLIC Living/include)
+
+target_link_libraries(Enemy Creature)
+target_link_libraries(Undead Enemy config++)
+target_link_libraries(Golem Enemy config++)
+target_link_libraries(Living Enemy config++)
