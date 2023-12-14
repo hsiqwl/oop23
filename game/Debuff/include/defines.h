@@ -1,0 +1,6 @@
+#ifndef LAB3_DEFINES_H
+#define LAB3_DEFINES_H
+
+#define DEFAULT_LAVA_DMG 2
+
+#endif //LAB3_DEFINES_H
