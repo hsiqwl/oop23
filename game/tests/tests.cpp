@@ -258,7 +258,6 @@ TEST_CASE("Skills"){
         REQUIRE(b.get_type() == Undead::undead_type::skeleton);
         REQUIRE_THROWS(a.apply_on(d));
     }
-
 }
 
 TEST_CASE("Vector"){
@@ -545,3 +544,5 @@ TEST_CASE("Game state"){
     state->add_dead_creature(c);
     REQUIRE_NOTHROW(state->get_dead_creature_by_coordinates(c.get_coordinates()));
 }
+
+

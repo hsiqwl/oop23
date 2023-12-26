@@ -203,7 +203,6 @@ void Creature_service::handle_death(Undead &target) {
  * @return enum type Direction representing the direction in which the next step will be taken
  */
 Creature_service::Direction Creature_service::get_next_step(const std::pair<size_t, size_t> &from, const std::pair<size_t, size_t> &to) const{
-    std::cout<<"making a path\n";
     std::vector<int> shortest_path = enemy_service->make_shortest_path(state->get_curr_map(), from, to);
     std::vector<std::pair<size_t,size_t>> steps = enemy_service->get_shortest_path(shortest_path, from, to,
                                                                         state->get_curr_map().get_columns(), state->get_curr_map().get_rows());
@@ -227,7 +226,7 @@ Creature_service::Direction Creature_service::get_next_step(const std::pair<size
 
 Creature_service::Direction Creature_service::get_next_step_mt(const std::pair<size_t, size_t> &from,
                                                             const std::pair<size_t, size_t> &to, const matrix<Cell*>& map) const{
-    std::vector<int> shortest_path = enemy_service->make_shortest_path(map, from, to);
+    std::vector<int> shortest_path = enemy_service->make_shortest_path_mt(map, from, to);
     std::vector<std::pair<size_t,size_t>> steps = enemy_service->get_shortest_path(shortest_path, from, to,
                                                                                    map.get_columns(), map.get_rows());
     if(steps.empty()){

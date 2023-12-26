@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
+#include <thread>
 /*!
  * @brief the main method that runs the game and draws the current game state
  * @param window sf::RenderWindow pointer to the window to draw into
@@ -23,10 +24,10 @@ void App::start(sf::RenderWindow *window) {
             }
             if (event_occured) {
                 auto start = std::chrono::steady_clock::now();
-                controller.get_service()->act_enemies_mt();
+                controller.get_service()->act_enemies();
                 auto finish = std::chrono::steady_clock::now();
                 auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
-                std::fstream out("timing paralled.txt", std::ios::app);
+                std::fstream out("timing unparalled.txt", std::ios::app);
                 if(out.is_open()){
                   out << time <<std::endl;
                 }
@@ -80,16 +81,24 @@ Necromant* App::make_hero() {
 
 Controller App::preload() {
     try {
-        Skill::init_skill();
-        Curse::init_curse();
-        Dessication_for_health::init_dessication();
-        Dessication_for_mana::init_dessication();
-        Undead::init_stats();
-        Living::init_stats();
-        Golem::init_golem_stats();
+        std::vector<matrix<Cell*>> floors;
+        std::jthread thread_3([&](){floors = App::load_map();});
+        std::jthread thread_1([](){
+            Skill::init_skill();
+            Curse::init_curse();
+            Dessication_for_health::init_dessication();
+            Dessication_for_mana::init_dessication();
+        });
+        std::jthread thread_2([](){
+            Undead::init_stats();
+            Living::init_stats();
+            Golem::init_golem_stats();
+        });
+        thread_1.join();
         Necromant *hero = App::make_hero();
-        std::vector<matrix<Cell*>> floors = App::load_map();
+        thread_2.join();
         std::unordered_map<std::pair<size_t, size_t>, Creature *, pair_hash> alive = load_creatures();
+        thread_3.join();
         mark_busy_cells(alive, floors[0]);
         Game_state* game_state = new Game_state(hero, alive, floors);
         Game_service* game_service = new Game_service(game_state);

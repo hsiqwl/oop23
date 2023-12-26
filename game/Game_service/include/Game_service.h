@@ -17,9 +17,7 @@ private:
     {
         for(; first!=last; first++)
         {
-            std::shared_lock lock(mutex);
             Creature_service::Direction dir = creature_service->get_next_step_mt(*first, to, state->get_curr_map());
-            lock.unlock();
             std::unique_lock u_lock(mutex);
             *first_out = dir;
             ++first_out;
