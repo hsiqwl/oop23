@@ -34,9 +34,11 @@ private:
     void handle_death(Living& target);
 public:
     void handle_creature_death(Creature& target);
-    bool check_if_within_attack_range(const Creature& first,const Creature& second);
+    bool check_if_within_attack_range(const std::pair<size_t, size_t> &first,
+                                      const std::pair<size_t, size_t> &second);
     Creature_service(Game_state* state_);
-    Direction get_next_step(Creature& from, Creature& to);
+    Direction get_next_step(const std::pair<size_t, size_t>& from, const std::pair<size_t, size_t>& to) const;
+    Direction get_next_step_mt(const std::pair<size_t, size_t>& from, const std::pair<size_t, size_t>& to, const matrix<Cell*>& map) const;
     void move(Creature& target, Direction direction);
     void attack(Creature& first, Creature& second);
     Game_state& get_state();

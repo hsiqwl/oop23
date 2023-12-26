@@ -79,8 +79,6 @@ void Creature_service::move_right(Creature& target) {
  * @param direction enum type value representing direction towards which target will be moved
  */
 void Creature_service::move(Creature& target, Direction direction) {
-    std::shared_mutex mux;
-    std::unique_lock lock(mux);
     std::pair<size_t ,size_t > old_coord = target.get_coordinates();
     switch (direction) {
         case Direction::up:
@@ -127,9 +125,10 @@ Enemy_service& Creature_service::get_enemy_service() {return *enemy_service;}
  * @param second Creature type reference to the to-be-attacked creature
  * @return true if is in the range, false otherwise
  */
-bool Creature_service::check_if_within_attack_range(const Creature &first,const Creature &second) {
-    double distance = sqrt(pow((int)first.get_coordinates().first - (int)second.get_coordinates().first, 2)
-            + pow((int)first.get_coordinates().second - (int)second.get_coordinates().second,2));
+bool Creature_service::check_if_within_attack_range(const std::pair<size_t, size_t> &first,
+                                                    const std::pair<size_t, size_t> &second) {
+    double distance = sqrt(pow((int)first.first - (int)second.first, 2)
+            + pow((int)first.second - (int)second.second,2));
     return distance <= sqrt(2);
 }
 /*!
@@ -203,24 +202,45 @@ void Creature_service::handle_death(Undead &target) {
  * @param to Creature type reference to the creature to which the path will be calculated
  * @return enum type Direction representing the direction in which the next step will be taken
  */
-Creature_service::Direction Creature_service::get_next_step(Creature &from, Creature &to) {
-    std::shared_mutex mux;
-    std::shared_lock lk(mux);
-    std::pair<size_t ,size_t > from_coord = from.get_coordinates();
-    std::pair<size_t ,size_t > to_coord = to.get_coordinates();
-    std::vector<int> shortest_path = enemy_service->make_shortest_path(state->get_curr_map(), from_coord, to_coord);
-    std::vector<std::pair<size_t,size_t>> steps = enemy_service->get_shortest_path(shortest_path, from_coord, to_coord,
+Creature_service::Direction Creature_service::get_next_step(const std::pair<size_t, size_t> &from, const std::pair<size_t, size_t> &to) const{
+    std::cout<<"making a path\n";
+    std::vector<int> shortest_path = enemy_service->make_shortest_path(state->get_curr_map(), from, to);
+    std::vector<std::pair<size_t,size_t>> steps = enemy_service->get_shortest_path(shortest_path, from, to,
                                                                         state->get_curr_map().get_columns(), state->get_curr_map().get_rows());
-    if(steps.empty())
+    if(steps.empty()){
         return Creature_service::Direction::none;
+    }
     std::pair<size_t, size_t> next_step = steps[steps.size() - 2];
-    if(next_step.first == from_coord.first + 1) {
+    if(next_step.first == from.first + 1) {
         return Creature_service::Direction::down;
     }
-    else if(next_step.first == from_coord.first - 1) {
+    else if(next_step.first == from.first - 1) {
         return Creature_service::Direction::up;
     }
-    else if(next_step.second == from_coord.second - 1) {
+    else if(next_step.second == from.second - 1) {
+        return Creature_service::Direction::left;
+    }
+    else {
+        return Creature_service::Direction::right;
+    }
+}
+
+Creature_service::Direction Creature_service::get_next_step_mt(const std::pair<size_t, size_t> &from,
+                                                            const std::pair<size_t, size_t> &to, const matrix<Cell*>& map) const{
+    std::vector<int> shortest_path = enemy_service->make_shortest_path(map, from, to);
+    std::vector<std::pair<size_t,size_t>> steps = enemy_service->get_shortest_path(shortest_path, from, to,
+                                                                                   map.get_columns(), map.get_rows());
+    if(steps.empty()){
+        return Creature_service::Direction::none;
+    }
+    std::pair<size_t, size_t> next_step = steps[steps.size() - 2];
+    if(next_step.first == from.first + 1) {
+        return Creature_service::Direction::down;
+    }
+    else if(next_step.first == from.first - 1) {
+        return Creature_service::Direction::up;
+    }
+    else if(next_step.second == from.second - 1) {
         return Creature_service::Direction::left;
     }
     else {

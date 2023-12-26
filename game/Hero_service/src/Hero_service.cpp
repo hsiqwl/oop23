@@ -31,6 +31,7 @@ void Hero_service::cast_skill(const std::string &skill_name, const std::pair<siz
         state->get_necromant().get_stats().set_curr_mp(
                 std::max(0, (int) state->get_necromant().get_stats().get_curr_mp() - (int) skill->get_mana_cost()));
     }catch (...) {
+        std::cout<<"catching an exception\n";
         return;
     }
 }

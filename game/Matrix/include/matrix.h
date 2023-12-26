@@ -2,6 +2,8 @@
 #define LAB3_MATRIX_H
 #include <vector>
 #include <iostream>
+#include <mutex>
+#include <shared_mutex>
 template<std::default_initializable T>
 class matrix{
 private:
@@ -28,7 +30,7 @@ public:
             matr[i].insert(matr[i].begin() + index + 1, column[i]);
     }
 
-    size_t get_columns() const{
+    size_t get_columns() const {
         return matr[0].size();
     }
 

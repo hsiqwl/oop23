@@ -40,7 +40,6 @@ public:
     void die();
     void trigger(bool state);
     void move(size_t x, size_t y);
-    //std::vector<std::unique_ptr<Debuff>>& get_debuffs();
     bool is_alive() const;
     bool triggered() const;
     void set_dead_state(bool state) {is_dead = state;};

@@ -1,475 +1,793 @@
-#ifndef LAB3_MATRIX_H
-#define LAB3_MATRIX_H
+#ifndef VECTOR_H
+#define VECTOR_H
+
 #include <cstddef>
-#include <type_traits>
+#include <cassert>
 #include <iterator>
-#include <initializer_list>
 #include <limits>
-#include <utility>
-#include <algorithm>
-#include <concepts>
-    template<std::default_initializable T>
-    class dynamic_array;
-
-    template<typename T, bool is_const>
-    class array_iterator;
 
 
-    template<typename T, bool is_const>
-    class array_iterator {
+    template <class Type>
+    class Vector;
+
+    template <class val_type, bool is_const>
+    class Vector_iterator
+    {
     private:
-        array_iterator(T *ptr) : ptr(ptr) {}
+        typedef std::conditional_t<is_const, const val_type, val_type>* elem_ptr;
 
-        friend dynamic_array<T>;
-        friend array_iterator<T, !is_const>;
-        typedef std::conditional_t<is_const, const T, T> *node_ptr_t;
-        node_ptr_t ptr;
+        elem_ptr ptr;
+
+        Vector_iterator(elem_ptr ptr): ptr(ptr){};
+
+        template <class Type>
+        friend class Vector;
+
+        friend Vector_iterator<val_type, !is_const>;
+
     public:
         typedef ptrdiff_t difference_type;
-        typedef T value_type;
-        typedef std::conditional_t<is_const, const T, T> *pointer;
-        typedef std::conditional_t<is_const, const T, T> &reference;
-        typedef std::contiguous_iterator_tag iterator_category;
+        typedef val_type value_type;
+        typedef std::conditional_t<is_const, const val_type, val_type>* pointer;
+        typedef std::conditional_t<is_const, const val_type, val_type>& reference;
+        typedef std::random_access_iterator_tag iterator_category;
 
-        array_iterator() : ptr(nullptr) {}
+        constexpr Vector_iterator () noexcept;
 
+        template <bool other_const>
+        Vector_iterator(const Vector_iterator<val_type, other_const>& it) noexcept
+        requires (is_const >= other_const);
+
+        template <bool other_const>
+        Vector_iterator(Vector_iterator<val_type, other_const>&& it) noexcept
+        requires (is_const >= other_const);
+
+        template <bool other_const>
+        Vector_iterator& operator = (const Vector_iterator<val_type, other_const>& it) noexcept
+        requires (is_const >= other_const);
+
+        template <bool other_const>
+        Vector_iterator& operator = (Vector_iterator<val_type, other_const>&& it) noexcept
+        requires (is_const >= other_const);
+
+        reference operator * () const noexcept;
+        //pointer operator -> () const noexcept;
+
+        template <bool other_const>
+        bool operator == (const Vector_iterator<val_type, other_const>& it) const noexcept;
         template<bool other_const>
-        array_iterator(array_iterator<T, other_const> &&other) noexcept
-        requires(is_const >= other_const) : ptr(
-                other.ptr) {
-            other.ptr = nullptr;
-        }
-
+        bool operator != (const Vector_iterator<val_type, other_const>& it) const noexcept;
         template<bool other_const>
-        array_iterator(const array_iterator<T, other_const> &other) noexcept
-        requires(is_const >= other_const): ptr(
-                other.ptr) {}
-
+        bool operator < (const Vector_iterator<val_type, other_const>& it) const noexcept;
         template<bool other_const>
-        array_iterator &operator=(array_iterator<T, other_const> &&other) noexcept
-                requires(is_const >= other_const) {
-            ptr = other.ptr;
-            other.ptr = nullptr;
-        }
-
+        bool operator > (const Vector_iterator<val_type, other_const>& it) const noexcept;
         template<bool other_const>
-        array_iterator &
-        operator=(const array_iterator<T, other_const> &other) noexcept
-                requires(is_const >= other_const) {
-            ptr = other.ptr;
-        }
-
-        array_iterator &operator++() noexcept {
-            ++ptr;
-            return *this;
-        }
-
-        array_iterator operator++(int) noexcept {
-            array_iterator iter(ptr);
-            ++ptr;
-            return iter;
-        }
-
-        array_iterator &operator--() noexcept {
-            --ptr;
-            return *this;
-        }
-
-        array_iterator operator--(int) noexcept {
-            array_iterator iter(ptr);
-            --ptr;
-            return iter;
-        }
-
-        reference operator*() noexcept {
-            return *ptr;
-        }
-
-        std::add_const_t<reference> operator*() const noexcept {
-            return *ptr;
-        }
-
+        bool operator <= (const Vector_iterator<val_type, other_const>& it) const noexcept;
         template<bool other_const>
-        bool operator==(const array_iterator<T, other_const> &other) const noexcept {
-            return ptr == other.ptr;
-        }
+        bool operator >= (const Vector_iterator<val_type, other_const>& it) const noexcept;
 
-        array_iterator &operator+=(difference_type n) noexcept {
-            ptr += n;
-            return *this;
-        }
+        Vector_iterator& operator ++ () noexcept;
+        Vector_iterator operator ++ (int) noexcept;
+        Vector_iterator& operator -- () noexcept;
+        Vector_iterator operator -- (int) noexcept;
 
-       array_iterator &operator-=(difference_type n) noexcept {
-            ptr -= n;
-            return *this;
-        }
-
-        array_iterator operator+(difference_type n) const noexcept {
-            array_iterator iter(ptr + n);
-            return iter;
-        }
-
-        array_iterator operator-(difference_type n) const noexcept {
-            array_iterator iter(ptr - n);
-            return iter;
-        }
-
-        reference operator[](difference_type n) noexcept {
-            return *(ptr + n);
-        }
-
-        std::add_const_t<reference> operator[](difference_type n) const noexcept {
-            return *(ptr + n);
-        }
-
+        Vector_iterator operator +(difference_type n) const noexcept;
+        Vector_iterator operator -(difference_type n) const noexcept;
         template<bool other_const>
-        bool operator<=(const array_iterator<T, other_const> &other) const noexcept {
-            return *ptr <= *other.ptr;
-        }
+        difference_type operator -(const Vector_iterator<val_type, other_const>& it) const;
 
-        template<bool other_const>
-        bool operator>(const array_iterator<T, other_const> &other) const noexcept {
-            return *ptr > *other.ptr;
-        }
+        template<class n_type, bool is_const_n>
+        friend Vector_iterator operator +(difference_type n, const Vector_iterator<n_type, is_const_n>& it);
 
-        template<bool other_const>
-        bool operator>=(const array_iterator<T, other_const> &other) const noexcept {
-            return *ptr >= *other.ptr;
-        }
+        reference operator [](difference_type n) const;
+        Vector_iterator& operator += (difference_type n);
+        Vector_iterator& operator -= (difference_type n);
 
-        template<bool other_const>
-        bool operator<(const array_iterator<T, other_const> &other) const noexcept {
-            return *ptr < *other.ptr;
-        }
-
-        template<bool other_const>
-        difference_type operator-(const array_iterator<T, other_const> &other) const noexcept {
-            return ptr - other.ptr;
-        }
-
-        pointer operator->() const noexcept {
-            return ptr;
-        }
-
-    public:
-        friend array_iterator operator+(difference_type n, const array_iterator &iter) noexcept {
-            array_iterator new_iter(iter.ptr + n);
-            return new_iter;
-        }
     };
 
-
-    template<std::default_initializable T>
-    class dynamic_array {
+    template <class Type>
+    class Vector
+    {
     private:
-        T *data;
-        size_t array_size;
 
-        T *realloc(T *old_data, size_t old_size, size_t new_size) {
-            T *new_data = new T[new_size];
-            std::copy(old_data, old_data + old_size, new_data);
-            delete[] old_data;
-            return new_data;
-        }
+        size_t size;
+        size_t capacity;
 
+        Type* arr;
     public:
-        typedef T value_type;
-        typedef T &reference;
-        typedef const T &const_reference;
-        typedef array_iterator<T, true> const_iterator;
-        typedef array_iterator<T, false> iterator;
+
+        typedef Type value_type;
+        typedef Type& reference;
+        typedef const Type& const_reference;
+        typedef Vector_iterator<Type, false> iterator;
+        typedef Vector_iterator<Type, true> const_iterator;
         typedef ptrdiff_t difference_type;
         typedef size_t size_type;
 
-        dynamic_array() : data(nullptr), array_size(0) {}
+        constexpr iterator begin() noexcept;
+        constexpr iterator end() noexcept;
 
-        dynamic_array(size_type n) : data(new T[n]), array_size(n) {}
+        constexpr const_iterator begin() const noexcept;
+        constexpr const_iterator end() const noexcept;
+        constexpr const_iterator cbegin() const noexcept;
+        constexpr const_iterator cend() const noexcept;
 
-        dynamic_array(const dynamic_array &other) noexcept(std::copy_constructible<T>) {
-            array_size = other.array_size;
-            std::copy(other.data, other.data + array_size, data);
-        }
+        constexpr Vector (): size(0), capacity(0), arr(nullptr) {};
+        constexpr explicit Vector (size_type size);
+        constexpr explicit Vector (size_type size, const_reference val)
+        requires std::copy_constructible<Type>;
+        constexpr Vector (const std::initializer_list<Type>& il);
 
-        dynamic_array(dynamic_array &&other) noexcept(std::is_nothrow_move_constructible_v<T>) {
-            data = std::exchange(other.data, nullptr);
-            array_size = std::exchange(other.array_size, 0);
-        }
+        constexpr Vector (Vector const& v);
+        constexpr Vector (Vector&& v) noexcept;
 
-        dynamic_array(size_type size, const T &value) noexcept(std::copy_constructible<T>)
-                : data(new T[size]{value}), array_size(size) {};
+        constexpr Vector& operator = (const Vector& v);
+        constexpr Vector& operator = (Vector&& v) noexcept;
+        constexpr Vector& operator = (const std::initializer_list<Type>& il);
+        constexpr bool operator == (Vector const& v) const;
+        constexpr reference operator [](size_type pos);
+        constexpr const_reference operator [](size_type pos) const;
 
-        dynamic_array(const std::initializer_list<T> &v) noexcept(std::copy_constructible<T>) {
-            data = new T[v.size()];
-            array_size = v.size();
-            int pos = 0;
-            for (auto &i: v) {
-                data[pos] = i;
-                ++pos;
-            }
-        }
+        [[nodiscard]] constexpr size_type get_size() const noexcept;
+        [[nodiscard]] constexpr size_type get_capacity() const noexcept;
+        [[nodiscard]] constexpr size_type max_size() const noexcept;
+        [[nodiscard]] constexpr bool empty() const noexcept;
 
-        ~dynamic_array() noexcept { delete[] data; array_size = 0;}
+        constexpr void reserve(size_type new_capacity)
+        requires std::move_constructible<Type>;
+        constexpr void shrink_to_fit()
+        requires std::move_constructible<Type>;
 
-        dynamic_array &operator=(const std::initializer_list<T> &v) noexcept(std::copy_constructible<T>) {
-            T *new_data = new T[v.size()];
-            delete[] data;
-            std::copy(v, v + v.size(), new_data);
-            array_size = v.size();
-            data = new_data;
-            return *this;
-        }
+        constexpr reference at(size_type pos);
+        constexpr const_reference at(size_type pos) const;
+        constexpr reference front();
+        constexpr const_reference front() const;
+        constexpr reference back();
+        constexpr const_reference back() const;
+        constexpr Type* data() noexcept;
+        constexpr const Type* data() const noexcept;
 
-        dynamic_array &operator=(const dynamic_array &other) noexcept(std::copy_constructible<T>) {
-            if (this == &other)
-                return *this;
-            T *new_data = new T[other.array_size];
-            delete[] data;
-            std::copy(other.data, other.data + other.array_size, new_data);
-            array_size = other.array_size;
-            data = new_data;
-            return *this;
-        }
+        constexpr void assign (size_type size, const Type& val);
+        constexpr void push_back (const Type& val);
+        constexpr void pop_back();
+        constexpr iterator insert(const_iterator position, const Type& val);
+        constexpr iterator erase(iterator position);
+        constexpr void clear();
+        constexpr void resize(size_type size);
 
-        dynamic_array &operator=(dynamic_array &&other) noexcept {
-            delete[] data;
-            data = std::exchange(other.data, nullptr);
-            array_size = std::exchange(other.array_size, 0);
-            return *this;
-        }
-
-        bool operator==(const dynamic_array &other) const noexcept {
-            bool equal_sizes = array_size == other.array_size;
-            if (equal_sizes) {
-                for (int i = 0; i < std::min(array_size, other.array_size); ++i) {
-                    if (data[i] != other.data[i])
-                        return false;
-                }
-                return true;
-            } else
-                return false;
-        }
-
-        reference operator[](size_t n) {
-            return data[n];
-        }
-
-        const_reference operator[](size_t n) const {
-            return data[n];
-        }
-
-        size_type size() const noexcept {
-            return array_size;
-        }
-
-        size_type max_size() const noexcept {
-            return std::numeric_limits<size_type>::max();
-        }
-
-        bool empty() const noexcept {
-            return array_size == 0;
-        }
-
-        void swap(dynamic_array &other) noexcept {
-            std::swap(data, other.data);
-            std::swap(array_size, other.array_size);
-        }
-
-        iterator begin() noexcept {
-            return iterator(data);
-        }
-
-        iterator end() noexcept {
-            return iterator(data + array_size);
-        }
-
-        const_iterator cbegin() noexcept {
-            return const_iterator(data);
-        }
-
-        const_iterator cend() noexcept {
-            return const_iterator(data + array_size);
-        }
-
-        iterator erase(const_iterator q) noexcept {
-            if (q.ptr == nullptr)
-                return iterator(nullptr);
-            for (auto i = q.ptr; i != data + array_size - 1; ++i)
-                *i = *(i + 1);
-            --array_size;
-            data = realloc(data, array_size + 1, array_size);
-            return iterator(const_cast<T *>(q.ptr));
-        }
-
-        iterator erase(const_iterator q1, const_iterator q2) noexcept {
-            while (q1 != q2) {
-                q1 = erase(q1);
-            }
-            return iterator(const_cast<T *>(q2.ptr));
-        }
-
-        template<typename ... Args>
-        iterator emplace(const_iterator p, Args &&... args)requires(std::constructible_from<T, Args...>) {
-            size_type pack_size = sizeof...(args);
-            data = realloc(data, array_size, array_size + pack_size);
-            array_size += pack_size;
-            for (auto i = data + array_size - 1; i != p.ptr + pack_size - 1; --i)
-                *i = *(i - pack_size);
-            int count = 0;
-            dynamic_array v({value_type(args)...});
-            for (auto i = p.ptr; i != p.ptr + pack_size; ++i) {
-                *i = v.data[count];
-                ++count;
-            }
-            return iterator(p.ptr);
-        }
-
-        iterator insert(const_iterator p, const T &t) noexcept(std::copy_constructible<T>) {
-            return emplace(p, t);
-        }
-
-        iterator insert(const_iterator p, T &&t) noexcept(std::move_constructible<T>) {
-            return emplace(p, std::move(t));
-        }
-
-        iterator insert(const_iterator p, size_t n, const T &t) noexcept(std::copy_constructible<T>) {
-            if (n == 0)
-                return iterator(const_cast<T *>(p.ptr));
-            else {
-                iterator before_p(p.ptr - 1);
-                try {
-                    for (int i = 0; i < n; i++)
-                        insert(p, t);
-                } catch (...) {
-                    erase(++before_p, p);
-                    throw;
-                }
-                return ++before_p;
-            }
-        }
-
-        template<std::input_iterator It>
-        iterator insert(const_iterator p, It i, It j)requires(std::copy_constructible<T>) {
-            if (i == j)
-                return iterator(const_cast<T *>(p.ptr));
-            else {
-                iterator before_p(p.ptr - 1);
-                try {
-                    for (; i != j; ++i)
-                        insert(p, *i);
-                } catch (...) {
-                    erase(++before_p, p);
-                }
-                return ++before_p;
-            }
-        }
-
-        iterator insert(const_iterator p, std::initializer_list<T> il)requires(std::move_constructible<T>) {
-            return insert(p, std::move_iterator(il.begin()), std::move_iterator(il.end()));
-        }
-
-        void clear() noexcept {
-            erase(begin(), end());
-        }
-
-        template<std::forward_iterator It>
-        void assign(It i, It j) {
-            if (empty()) {
-                insert(end(), i, j);
-            } else {
-                auto first = cbegin();
-                auto last = --cend();
-                insert(end(), i, j);
-                erase(first, ++last);
-            }
-        }
-
-        void assign(std::initializer_list<T> il)requires(std::copy_constructible<T>) {
-            if (empty()) {
-                insert(end(), std::move(il));
-            } else {
-                auto first = cbegin();
-                auto last = --cend();
-                insert(end(), std::move(il));
-                erase(first, ++last);
-            }
-        }
-
-        void assign(size_t n, const T &t)requires(std::copy_constructible<T>) {
-            if (empty()) {
-                insert(end(), n, t);
-            } else {
-                auto first = cbegin();
-                auto last = --cend();
-                insert(end(), n, t);
-                erase(first, ++last);
-            }
-
-        }
-
-        reference front() {
-            return *begin();
-        }
-
-        const_reference front() const {
-            return *begin();
-        }
-
-        reference back() {
-            return *(--end());
-        }
-
-        const_reference back() const {
-            return *(--end());
-        }
-
-        template<typename ... Args>
-        void emplace_front(Args &&... args)requires(std::constructible_from<T, Args...>) {
-            emplace(++begin(), args...);
-        }
-
-        template<typename ... Args>
-        void emplace_back(Args &&... args)requires(std::constructible_from<T, Args...>) {
-            emplace(end(), args...);
-        }
-
-        void push_front(const T &t)requires(std::copy_constructible<T>) {
-            insert(++begin(), t);
-        }
-
-        void push_front(T &&t)requires(std::move_constructible<T>) {
-            insert(++begin(), t);
-        }
-
-        void push_back(const T &t)requires(std::copy_constructible<T>) {
-            insert(end(), t);
-        }
-
-        void push_back(T &&t)requires(std::move_constructible<T>) {
-            insert(end(), t);
-        }
-
-        void pop_front() noexcept {
-            if (empty())
-                erase(begin());
-        }
-
-        void pop_back() noexcept {
-            if (empty())
-                erase(--end());
-        }
-
-        reference at(size_t n) {
-            if (n >= array_size)
-                throw std::out_of_range("out of range");
-            else
-                return data[n];
-        }
-
-        const_reference at(size_t n) const {
-            if (n >= array_size)
-                throw std::out_of_range("out of range");
-            else
-                return data[n];
-        }
+        ~Vector() {delete[] this->arr; };
     };
-#endif //LAB3_MATRIX_H
+
+    static_assert(std::random_access_iterator <Vector_iterator <int, false>>);
+    static_assert(std::random_access_iterator <Vector_iterator <int, true>>);
+
+    template <class val_type, bool is_const>
+    constexpr Vector_iterator <val_type, is_const>::Vector_iterator () noexcept: ptr(nullptr) {}
+
+    template <class val_type, bool is_const>
+    template <bool other_const>
+    Vector_iterator <val_type, is_const>::Vector_iterator(const Vector_iterator<val_type, other_const>& it) noexcept
+    requires (is_const >= other_const)
+            : ptr(it.ptr) {}
+
+    template <class val_type, bool is_const>
+    template <bool other_const>
+    Vector_iterator <val_type, is_const>::Vector_iterator(Vector_iterator<val_type, other_const>&& it) noexcept
+    requires (is_const >= other_const)
+            : ptr(it.ptr)
+    {
+        it.ptr = nullptr;
+    }
+
+    template <class val_type, bool is_const>
+    template <bool other_const>
+    Vector_iterator <val_type, is_const>& Vector_iterator <val_type, is_const>::operator = (const Vector_iterator<val_type, other_const>& it) noexcept
+    requires (is_const >= other_const)
+    {
+        ptr = it.ptr;
+        return *this;
+    }
+
+    template <class val_type, bool is_const>
+    template <bool other_const>
+    Vector_iterator <val_type, is_const>& Vector_iterator <val_type, is_const>::operator = (Vector_iterator<val_type, other_const>&& it) noexcept
+    requires (is_const >= other_const)
+    {
+        this->ptr = it.ptr;
+        it.ptr = nullptr;
+    }
+
+    template <class val_type, bool is_const>
+    typename Vector_iterator <val_type, is_const>::reference Vector_iterator <val_type, is_const>::operator * () const noexcept
+    {
+        return *(this->ptr);
+    }
+
+   /* template <class val_type, bool is_const>
+    typename Vector_iterator <val_type, is_const>::pointer Vector_iterator <val_type, is_const>::operator -> () const noexcept
+    {
+        return &this->ptr;
+    }*/
+
+    template <class val_type, bool is_const>
+    template <bool other_const>
+    bool Vector_iterator <val_type, is_const>::operator == (const Vector_iterator<val_type, other_const>& it) const noexcept
+    {
+        return this->ptr == it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    template<bool other_const>
+    bool Vector_iterator <val_type, is_const>::operator != (const Vector_iterator<val_type, other_const>& it) const noexcept
+    {
+        return this->ptr != it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    template<bool other_const>
+    bool Vector_iterator <val_type, is_const>::operator < (const Vector_iterator<val_type, other_const>& it) const noexcept
+    {
+        return this->ptr < it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    template<bool other_const>
+    bool Vector_iterator <val_type, is_const>::operator > (const Vector_iterator<val_type, other_const>& it) const noexcept
+    {
+        return this->ptr > it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    template<bool other_const>
+    bool Vector_iterator <val_type, is_const>::operator <= (const Vector_iterator<val_type, other_const>& it) const noexcept
+    {
+        return this->ptr <= it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    template<bool other_const>
+    bool Vector_iterator <val_type, is_const>::operator >= (const Vector_iterator<val_type, other_const>& it) const noexcept
+    {
+        return this->ptr >= it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator<val_type, is_const>& Vector_iterator <val_type, is_const>::operator ++ () noexcept
+    {
+        (*this).ptr++;
+        return *this;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator <val_type, is_const> Vector_iterator <val_type, is_const>::operator ++ (int) noexcept
+    {
+        Vector_iterator<val_type, is_const> old(*this);
+        (*this).ptr++;
+        return old;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator <val_type, is_const>& Vector_iterator <val_type, is_const>::operator -- () noexcept
+    {
+        (*this).ptr--;
+        return *this;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator <val_type, is_const> Vector_iterator <val_type, is_const>::operator -- (int) noexcept
+    {
+        Vector_iterator<val_type, is_const> old(*this);
+        (*this).ptr--;
+        return old;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator<val_type, is_const> Vector_iterator<val_type, is_const>::operator +(difference_type n) const noexcept
+    {
+        Vector_iterator<val_type,is_const> iter(this->ptr + n);
+        return iter;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator<val_type, is_const>  Vector_iterator<val_type, is_const>::operator -(difference_type n) const noexcept
+    {
+        Vector_iterator<val_type, is_const> iter(this->ptr - n);
+        return iter;
+    }
+
+    template <class val_type, bool is_const>
+    template<bool other_const>
+    typename Vector_iterator <val_type, is_const>::difference_type Vector_iterator<val_type, is_const>::operator -(const Vector_iterator<val_type, other_const>& it) const
+    {
+        return ptr - it.ptr;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator <val_type, is_const> operator +(typename Vector_iterator <val_type, is_const>::difference_type n, const Vector_iterator <val_type, is_const>& it)
+    {
+        it.ptr += n;
+        return it;
+    }
+
+    template <class val_type, bool is_const>
+    typename Vector_iterator <val_type, is_const>::reference Vector_iterator <val_type, is_const>::operator [](difference_type n) const
+    {
+        auto tmp = this->ptr;
+        tmp += n;
+        return *tmp;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator <val_type, is_const>& Vector_iterator <val_type, is_const>::operator += (difference_type n)
+    {
+        this->ptr += n;
+        return *this;
+    }
+
+    template <class val_type, bool is_const>
+    Vector_iterator <val_type, is_const>& Vector_iterator <val_type, is_const>::operator -= (difference_type n)
+    {
+        this->ptr -= n;
+        return *this;
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::iterator Vector<Type>::begin() noexcept
+    {
+        return iterator(this->arr);
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::iterator Vector<Type>::end() noexcept
+    {
+        return iterator(this->arr + this->size);
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_iterator Vector<Type>::begin() const noexcept
+    {
+        return const_iterator(this->arr);
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_iterator Vector<Type>::end() const noexcept
+    {
+        return const_iterator(this->arr + this->size);
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_iterator Vector<Type>::cbegin() const noexcept
+    {
+        return const_iterator(this->arr);
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_iterator Vector<Type>::cend() const noexcept
+    {
+        return const_iterator(this->arr + this->size);
+    }
+
+    template <class Type>
+    constexpr Vector<Type>::Vector (size_type size)
+    {
+        this->arr = new Type[size];
+
+        if (this->arr == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+
+        this->size = size;
+        this->capacity = size;
+    }
+
+    template <class Type>
+    constexpr Vector<Type>::Vector (size_type size, const_reference val)
+    requires std::copy_constructible<Type>
+    {
+        this->arr = new Type[size];
+
+        if (this->arr == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+
+        for (size_t i = 0; i < size; i++)
+        {
+            this->arr[i] = val;
+        }
+
+        this->size = size;
+        this->capacity = size;
+    }
+
+    template<class Type>
+    constexpr Vector<Type>::Vector(const std::initializer_list<Type> &il)
+    {
+        this->arr = new Type[il.size()];
+        if(this->arr == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+
+        for(size_t i = 0; i < il.size(); ++i){
+            this->arr[i] = *(il.begin() + i);
+        }
+        this->size = il.size();
+        this->capacity = il.size();
+    }
+
+    template <class Type>
+    constexpr Vector<Type>::Vector (Vector const& v)
+    {
+        this->arr = new Type[v.size];
+
+        if (this->arr == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+        std::copy(v.arr, v.arr + v.size, this->arr);
+        this->size = this->capacity = v.size;
+    }
+
+    template <class Type>
+    constexpr Vector<Type>::Vector (Vector&& v) noexcept :
+            size(v.size), capacity(v.capacity), arr(v.arr)
+    {
+        v.size = 0;
+        v.capacity = 0;
+        v.arr = nullptr;
+    }
+
+    template <class Type>
+    constexpr Vector<Type>& Vector<Type>::operator = (const Vector& v)
+    {
+        if(this == &v)
+            return *this;
+        Type* new_data = new Type[v.size];
+        if(new_data == nullptr)
+            throw std::bad_alloc();
+        for(int i = 0; i < v.size; ++i){
+            new_data[i] = v[i];
+        }
+        delete[] this->arr;
+        this->arr = new_data;
+        this->size = v.size;
+        this->capacity = v.size;
+        return *this;
+    }
+
+    template <class Type>
+    constexpr Vector<Type>& Vector<Type>::operator = (Vector<Type>&& v) noexcept
+    {
+        delete [] this->arr;
+        this->size = v.size;
+        this->capacity = v.capacity;
+        this->arr = v.arr;
+
+        v.size = 0;
+        v.capacity = 0;
+        v.arr = nullptr;
+        return *this;
+    }
+
+    template<class Type>
+    constexpr Vector<Type>& Vector<Type>::operator = (const std::initializer_list<Type> &il) {
+        Type* new_data = new Type[il.size()];
+        if(new_data == nullptr)
+            throw std::bad_alloc();
+        for(int i = 0 ; i < il.size(); ++i){
+            new_data[i] = *(il.begin() + i);
+        }
+        delete[] this->arr;
+        this->arr = new_data;
+        this->size = il.size();
+        this->capacity = il.size();
+        return *this;
+    }
+
+    template <class Type>
+    constexpr bool Vector<Type>::operator == (Vector const& v) const
+    {
+        if (this->size != v.size)
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < this->size; i++)
+        {
+            if (this->arr[i] != v[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::reference Vector<Type>::operator [] (size_type pos)
+    {
+        return this->arr[pos];
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_reference Vector<Type>::operator [] (size_type pos) const
+    {
+        return this->arr[pos];
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::size_type Vector<Type>::get_size () const noexcept
+    {
+        return this->size;
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::size_type Vector<Type>::get_capacity () const noexcept
+    {
+        return this->capacity;
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::size_type Vector<Type>::max_size () const noexcept
+    {
+        return std::numeric_limits<size_type>::max();
+    }
+
+    template <class Type>
+    [[nodiscard]] constexpr bool Vector<Type>::empty () const noexcept
+    {
+        return this->size == 0;
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::reserve (typename Vector<Type>::size_type new_capacity)
+    requires std::move_constructible<Type>
+    {
+        if (new_capacity < this->capacity)
+        {
+            return;
+        }
+
+        Type* buf_arr = new Type[new_capacity];
+        Type* ptr = buf_arr, *src = arr;
+        for (size_t i = 0; i < this->size; i++, ptr++, src++)
+        {
+            new(static_cast<void*>(ptr)) Type{std::move(*src)};
+        }
+
+        delete [] arr;
+        this->arr = buf_arr;
+        this->capacity = new_capacity;
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::shrink_to_fit ()
+    requires std::move_constructible<Type>
+    {
+        if (this->capacity == this->size)
+        {
+            return;
+        }
+
+        Type* buf_arr = new Type[this->size];
+        Type* ptr = buf_arr, *src = arr;
+        for (size_t i = 0; i < this->size; i++, ptr++, src++)
+        {;
+            new(static_cast<void*>(ptr)) Type{std::move(*src)};
+        }
+
+        delete [] arr;
+        this->arr = buf_arr;
+        this->capacity = this->size;
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::reference Vector<Type>::at (size_type pos)
+    {
+        if (pos >= this->size)
+        {
+            throw std::out_of_range("bad pos");
+        }
+        else
+        {
+            return this->arr[pos];
+        }
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_reference Vector<Type>::at (size_type pos) const
+    {
+        if (pos >= this->size)
+        {
+            throw std::out_of_range("bad pos");
+        }
+        else
+        {
+            return this->arr[pos];
+        }
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::reference Vector<Type>::front ()
+    {
+        return this->arr[0];
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_reference Vector<Type>::front () const
+    {
+        return this->arr[0];
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::reference Vector<Type>::back ()
+    {
+        return this->arr[this->size-1];
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::const_reference Vector<Type>::back () const
+    {
+        return this->arr[this->size-1];
+    }
+
+    template <class Type>
+    constexpr Type* Vector<Type>::data () noexcept
+    {
+        return this->arr;
+    }
+
+    template <class Type>
+    constexpr const Type* Vector<Type>::data () const noexcept
+    {
+        return this->arr;
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::assign (typename Vector<Type>::size_type size, const Type& val)
+    {
+        Type* new_data = new Type[size]{val};
+        if(new_data == nullptr)
+            throw std::bad_alloc();
+        delete[] this->arr;
+        this->arr = new_data;
+        this->size = size;
+        this->capacity = size;
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::push_back (const Type& val)
+    {
+        this->insert(this->end(), val);
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::pop_back ()
+    {
+        this->erase(this->end() - 1);
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::iterator Vector<Type>::insert (Vector<Type>::const_iterator position, const Type& val)
+    {
+        if (this->size == this->capacity)
+        {
+            if (this->size == 0)
+            {
+                this->capacity = 1;
+            }
+            else
+            {
+                this->capacity *= 2;
+            }
+
+            Type* buf_arr = new Type[this->capacity];
+            Type* ptr = buf_arr, *src = arr;
+
+            Vector<Type>::iterator it;
+            for (it = this->begin(); it != position; it++, ptr++, src++)
+            {
+                new(static_cast<void*>(ptr)) Type{std::move(*src)};
+            }
+
+            Vector<Type>::iterator return_iter(ptr);
+            *ptr = val;
+            ++ptr;
+
+            for ( ; it != this->end(); it++, ptr++, src++)
+            {
+                new(static_cast<void*>(ptr)) Type{std::move(*src)};
+            }
+
+            delete [] arr;
+            this->arr = buf_arr;
+            ++this->size;
+            return return_iter;
+        }
+        else
+        {
+            Vector<Type>::iterator it;
+            for (it = this->end(); it != position; --it)
+            {
+                *it = *(it-1);
+            }
+            *it = val;
+            ++this->size;
+            return it;
+        }
+    }
+
+    template <class Type>
+    constexpr typename Vector<Type>::iterator Vector<Type>::erase(Vector<Type>::iterator position)
+    {
+        size_t diff = position - begin();
+        for (iterator it = position + 1; it != this->end(); it++)
+        {
+            *(it-1) = *(it);
+        }
+        if (this->size - 1 == this->capacity / 2)
+        {
+            this->capacity /= 2;
+
+            Type* buf_arr = new Type[this->capacity];
+            Type* ptr = buf_arr, *src = arr;
+            for (size_t i = 0; i < this->size-1; i++, ptr++, src++)
+            {
+                new(static_cast<void*>(ptr)) Type{std::move(*src)};
+            }
+
+            delete [] arr;
+            this->arr = buf_arr;
+            this->size--;
+        }
+        else
+        {
+            this->size--;
+        }
+        return iterator(this->arr + diff);
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::clear()
+    {
+        for (Type* ptr = this->arr; ptr != this->arr + this->size; ptr++)
+        {
+            ptr->~Type();
+        }
+
+        this->size = 0;
+    }
+
+    template <class Type>
+    constexpr void Vector<Type>::resize (size_type size)
+    {
+        if (this->size == size)
+        {
+            return;
+        }
+
+        size_t copy_size;
+        if (this->size < size)
+        {
+            copy_size = this->size;
+        }
+
+        if (this->size > size)
+        {
+            copy_size = size;
+        }
+        Type* buf_arr = new Type[size];
+        Type* ptr = buf_arr, *src = arr;
+        for (size_t i = 0; i < copy_size; i++, ptr++, src++)
+        {
+            new(static_cast<void*>(ptr)) Type{std::move(*src)};
+        }
+        delete [] arr;
+        this->arr = buf_arr;
+        this->capacity = size;
+        this->size = size;
+    }
+
+#endif // VECTOR_H

@@ -14,6 +14,7 @@ protected:
     static inline size_t mana_change{};
 public:
     static void init_skill();
+    unsigned short get_development() const {return development;};
     void set_development(unsigned short development_);
     const std::string& get_name() const;
     void set_name(const std::string& name_);

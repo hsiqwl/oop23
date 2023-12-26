@@ -18,7 +18,7 @@ class Controller{
 private:
     Game_service* service;
     std::pair<size_t, size_t> get_coordinates_on_map(const sf::Vector2i& mouse_position, window_info& info);
-    void handle_key_pressed(sf::Keyboard::Key key_code, window_info& info);
+    void handle_key_pressed(sf::Keyboard::Key key_code, window_info& info, bool& event_occured);
     void handle_mouse_pressed(sf::Mouse::Button button, window_info& info);
     void handle_window_resize(sf::Event& event, window_info& info);
     void handle_level_change();

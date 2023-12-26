@@ -49,7 +49,7 @@ void Undead::init_skeleton_stats() {
     Undead::skeleton_stats.set_curr_level(1);
     Undead::skeleton_stats.set_max_hp(30);
     Undead::skeleton_stats.set_curr_hp(30);
-    Undead::skeleton_stats.set_base_dmg(10);
+    Undead::skeleton_stats.set_base_dmg(15);
     Undead::skeleton_stats.set_max_mp(5);
     Undead::skeleton_stats.set_curr_mp(5);
 }

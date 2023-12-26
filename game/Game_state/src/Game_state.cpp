@@ -12,6 +12,7 @@ Game_state::Game_state(Necromant* necromant_, std::unordered_map<std::pair<size_
     necromant = necromant_;
     dungeon_map = map;
     curr_level = 1;
+    dead_useful_creatures = {};
 }
 /*!
  * @brief searches for an alive creatures with given coordinates
@@ -38,8 +39,9 @@ Creature* Game_state::get_dead_creature_by_coordinates(std::pair<size_t, size_t>
     if(it!=dead_useful_creatures.end()) {
         return it->second;
     }
-    else
+    else {
         throw std::logic_error("didnt find creature in the dead map");
+    }
 }
 
 /*!

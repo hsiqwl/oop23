@@ -85,11 +85,11 @@ Stats::Stats(size_t max_hp_, size_t max_mp_, size_t base_dmg_) {
     base_dmg = base_dmg_;
     curr_level = 1;
     curr_xp = 0;
+    max_curr_xp = 0;
+    max_level = 1;
+    dmg_block_probability = 0;
+    incremental_rate = 0;
 }
-/*!
- * @brief default constructor
- */
-Stats::Stats(){}
 
 /*!
  * @constructor that is using a default one, setting dmg block probability
@@ -109,7 +109,7 @@ void Stats::add_xp(size_t xp_points) {
         set_curr_level(curr_level + 1);
     }
     curr_xp += xp_points % max_curr_xp;
-    if(curr_xp > max_curr_xp){
+    if(curr_xp >= max_curr_xp){
         change_stats(true);
         set_curr_level(curr_level + 1);
         curr_xp = curr_xp % max_curr_xp;
@@ -155,4 +155,18 @@ void Stats::set_max_curr_xp(size_t max_curr_xp_) {
  */
 void Stats::set_incremential_rate(double incremential_rate_) {
     incremental_rate = incremential_rate_;
+}
+
+Stats::Stats() {
+    curr_hp = 0;
+    max_hp = 0;
+    base_dmg = 0;
+    curr_mp = 0;
+    max_mp = 0;
+    curr_xp = 0;
+    curr_level = 0;
+    max_level = 0;
+    max_curr_xp = 0;
+    dmg_block_probability = 0;
+    incremental_rate = 0;
 }

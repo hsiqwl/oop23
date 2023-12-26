@@ -38,8 +38,7 @@ std::pair<size_t, size_t> Controller::get_coordinates_on_map(const sf::Vector2i&
  * @param key_code enum type representing the letter that was pressed
  * @param info reference to a window_info type
  */
-void Controller::handle_key_pressed(sf::Keyboard::Key key_code, window_info& info) {
-    unsigned short level = service->get_state()->get_level();
+void Controller::handle_key_pressed(sf::Keyboard::Key key_code, window_info& info, bool& event_occured) {
     switch(key_code){
         case sf::Keyboard::Key::W: {
             service->get_creature_service()->move(service->get_creature_service()->get_state().get_necromant(),
@@ -64,7 +63,12 @@ void Controller::handle_key_pressed(sf::Keyboard::Key key_code, window_info& inf
         case sf::Keyboard::Key::Z: {
             std::pair<size_t, size_t> target_coord = get_coordinates_on_map(sf::Mouse::getPosition(*info.window), info);
             service->get_creature_service()->get_hero_service().cast_skill("Curse", target_coord);
-            Creature* target = service->get_state()->get_alive_creature_by_coordinates(target_coord);
+            Creature *target;
+            try {
+                target = service->get_state()->get_alive_creature_by_coordinates(target_coord);
+            }catch (...){
+                break;
+            }
             if(!target->is_alive()) {
                 service->get_creature_service()->handle_creature_death(*target);
                 service->get_state()->get_necromant().get_stats().add_xp(((Enemy*)target)->get_xp_after_death());
@@ -92,21 +96,25 @@ void Controller::handle_key_pressed(sf::Keyboard::Key key_code, window_info& inf
                 std::pair<size_t, size_t> target_coord = get_coordinates_on_map(sf::Mouse::getPosition(*info.window),
                                                                                 info);
                 service->get_creature_service()->get_hero_service().cast_skill("Necromastery", target_coord);
-                Creature *target = service->get_state()->get_dead_creature_by_coordinates(target_coord);
-                target->set_dead_state(false);
-                service->get_state()->add_alive_creature(*target);
-                service->get_state()->remove_dead_creature(target_coord);
-                break;
+                try {
+                    Creature *target = service->get_state()->get_dead_creature_by_coordinates(target_coord);
+                    target->set_dead_state(false);
+                    service->get_state()->add_alive_creature(*target);
+                    service->get_state()->remove_dead_creature(target_coord);
+                }catch (...)
+                {break;}
         }
         case sf::Keyboard::Key::E:{
             std::pair<size_t ,size_t> coord = service->get_state()->get_necromant().get_coordinates();
             service->get_creature_service()->get_hero_service().interact_with_cell(coord);
             break;
         }
+        default:{
+            event_occured = false;
+            return;
+        }
     }
-    if(level != service->get_state()->get_level()) {
-
-    }
+    event_occured = true;
 }
 /*!
  * @brief reacts to pressing a mouse button
@@ -155,8 +163,8 @@ void Controller::handle_window_resize(sf::Event &event, window_info& info) {
 void Controller::handle_event(sf::Event &event, window_info& info, bool& event_occured) {
     switch (event.type) {
         case sf::Event::KeyPressed:
-            handle_key_pressed(event.key.code, info);
             event_occured = true;
+            handle_key_pressed(event.key.code, info, event_occured);
             break;
         case sf::Event::MouseButtonPressed:
             handle_mouse_pressed(event.mouseButton.button, info);

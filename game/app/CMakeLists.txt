@@ -3,8 +3,8 @@ project(app)
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
-add_compile_options(-g --coverage -fsanitize=thread)
-add_link_options(--coverage -fsanitize=thread)
+add_compile_options(-g -fsanitize=thread)
+add_link_options(-fsanitize=thread)
 add_executable(test src/test.cpp src/App.cpp ../Matrix/include/matrix.h)
 
 target_include_directories(test PUBLIC include)

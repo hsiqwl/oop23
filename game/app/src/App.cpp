@@ -1,6 +1,6 @@
 #include "../include/app.h"
 #include <iostream>
-#include <ctime>
+#include <chrono>
 #include <fstream>
 /*!
  * @brief the main method that runs the game and draws the current game state
@@ -22,13 +22,14 @@ void App::start(sf::RenderWindow *window) {
                 return;
             }
             if (event_occured) {
-                clock_t start = clock();
+                auto start = std::chrono::steady_clock::now();
                 controller.get_service()->act_enemies_mt();
-                clock_t end = clock();
-                double time = static_cast<double>(double(end - start) * 1000 / CLOCKS_PER_SEC);
-                std::ofstream out("timing paralled.txt", std::ios::app);
-                if (out.is_open())
-                    out << time << std::endl;
+                auto finish = std::chrono::steady_clock::now();
+                auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
+                std::fstream out("timing paralled.txt", std::ios::app);
+                if(out.is_open()){
+                  out << time <<std::endl;
+                }
                 out.close();
                 if (!controller.get_service()->get_state()->get_necromant().is_alive()) {
                     close_app(window);
@@ -63,7 +64,7 @@ Necromant* App::make_hero() {
     hero_stats.set_max_curr_xp(400);
     hero_stats.set_incremential_rate(1.5);
     std::string name = "necromant";
-    Necromant* hero = new Necromant(name, Creature::Fraction::necromant, {10,13}, hero_stats);
+    Necromant* hero = new Necromant(name, Creature::Fraction::necromant, {30,30}, hero_stats);
     Curse* curse = new Curse();
     Dessication_for_mana* dess_mana = new Dessication_for_mana(hero);
     Dessication_for_health* dess_health = new Dessication_for_health(hero);
@@ -109,66 +110,26 @@ void App::mark_busy_cells(std::unordered_map<std::pair<size_t, size_t>, Creature
 }
 
 std::unordered_map<std::pair<size_t, size_t>, Creature *, pair_hash> App::load_creatures() {
-    std::string zombie = "zombie";
-    std::string knight = "knight";
     std::string skeleton = "skeleton";
-    Golem* enemy_1 = new Golem(zombie, {1,2}, rand()%100 + 100, Golem::golem_type::fire);
-    Golem* enemy_4 = new Golem(zombie, {3,4}, rand()%100 + 100, Golem::golem_type::essence);
-    Living* enemy_2 = new Living(knight, {2,10}, rand()%100 + 100, Living::living_type::knight);
-    Undead* enemy_3 = new Undead(skeleton, {2,15}, rand()%100 + 100, Undead::undead_type::skeleton);
-    Undead* enemy_5 = new Undead(skeleton, {3,21}, rand()%100 + 100, Undead::undead_type::zombie);
-    Undead* enemy_6 = new Undead(skeleton, {6,11}, rand()%100 + 100, Undead::undead_type::ogre);
-    Golem* enemy_7 = new Golem(zombie, {9,1}, rand()%100 + 100, Golem::golem_type::essence);
-    Undead* enemy_8 = new Undead(zombie, {9,19}, rand()%100 + 100, Undead::undead_type::ogre);
-    Living* enemy_9 = new Living(zombie, {16,2}, rand()%100 + 100, Living::living_type::soldier);
-    Living* enemy_10 = new Living(zombie, {16,8}, rand()%100 + 100, Living::living_type::soldier);
-    Undead* enemy_11 = new Undead(skeleton, {15,19}, rand()%100 + 100, Undead::undead_type::skeleton);
-    Undead* enemy_12 = new Undead(skeleton, {17,5}, rand()%100 + 100, Undead::undead_type::skeleton);
-    Living* enemy_13 = new Living(skeleton, {17,15}, rand()%100 + 100, Living::living_type::knight);
-
-
     std::unordered_map<std::pair<size_t, size_t>, Creature *, pair_hash> alive;
-    alive.insert(std::make_pair(enemy_1->get_coordinates(),enemy_1));
-    alive.insert(std::make_pair(enemy_2->get_coordinates(),enemy_2));
-    alive.insert(std::make_pair(enemy_3->get_coordinates(),enemy_3));
-    alive.insert(std::make_pair(enemy_4->get_coordinates(),enemy_4));
-    alive.insert(std::make_pair(enemy_5->get_coordinates(),enemy_5));
-    alive.insert(std::make_pair(enemy_7->get_coordinates(),enemy_7));
-    alive.insert(std::make_pair(enemy_8->get_coordinates(),enemy_8));
-    alive.insert(std::make_pair(enemy_9->get_coordinates(),enemy_9));
-    alive.insert(std::make_pair(enemy_10->get_coordinates(),enemy_10));
-    alive.insert(std::make_pair(enemy_11->get_coordinates(),enemy_11));
-    alive.insert(std::make_pair(enemy_12->get_coordinates(),enemy_12));
-    alive.insert(std::make_pair(enemy_6->get_coordinates(),enemy_6));
-    alive.insert(std::make_pair(enemy_13->get_coordinates(),enemy_13));
-
+    for(int j = 0; j < 60; ++j){
+        Undead* enemy1 = new Undead(skeleton, {0,j}, rand()%10+1, Undead::undead_type::skeleton);
+        Undead* enemy2 = new Undead(skeleton, {59,j}, rand()%10+1, Undead::undead_type::skeleton);
+        alive.insert(std::make_pair(enemy1->get_coordinates(), enemy1));
+        alive.insert(std::make_pair(enemy2->get_coordinates(), enemy2));
+    }
+    for(int i = 1; i < 59; ++i){
+        Undead* enemy1 = new Undead(skeleton, {i,0}, rand()%10+1, Undead::undead_type::skeleton);
+        Undead* enemy2 = new Undead(skeleton, {i,59}, rand()%10+1, Undead::undead_type::skeleton);
+        alive.insert(std::make_pair(enemy1->get_coordinates(), enemy1));
+        alive.insert(std::make_pair(enemy2->get_coordinates(), enemy2));
+    }
     return alive;
 }
 
 
 std::vector<matrix<Cell *>> App::load_map() {
-    std::vector<std::vector<short>> pre_map = {
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,5,1,1,1,1,1,0},
-            {0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,0,0,2,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,0,0,2,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,1,2,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
-            {0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,5,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0},
-            {0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,5,5,0},
-            {0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,5,5,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-    };
+    std::vector<std::vector<short>> pre_map(60,std::vector<short>(60,1));
     std::vector<matrix<Cell*>> map;
     matrix<Cell*> level;
     for(int i = 0; i < pre_map.size(); ++i)

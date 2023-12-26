@@ -16,6 +16,8 @@ public:
     Enemy_service(Game_state* state_);
     std::vector<int> make_shortest_path(const matrix<Cell*>& map,const std::pair<size_t, size_t>& start,
                                            const std::pair<size_t, size_t>& end);
+    std::vector<int> make_shortest_path_mt(const matrix<Cell*>& map,const std::pair<size_t, size_t>& start,
+                                        const std::pair<size_t, size_t>& end);
     std::vector<std::pair<size_t, size_t>> get_shortest_path(const std::vector<int>& wave_lengths,const std::pair<size_t, size_t>& start,
                                                              const std::pair<size_t, size_t>& end, const size_t& columns, const size_t& rows);
     bool check_if_within_triggering_radius(const std::pair<size_t,size_t>& first,const std::pair<size_t,size_t>& second);
