@@ -305,3 +305,15 @@ void Creature_service::handle_creature_death(Creature &target) {
     }
 }
 
+
+void Creature_service::attack_mt(Creature &first, Creature &second, std::shared_mutex& mutex) {
+    first.deal_dmg(second);
+    std::unique_lock locker(mutex);
+    if(!second.is_alive()) {
+        handle_creature_death(second);
+        if(second.get_fraction() != Creature::Fraction::necromant) {
+            Enemy *enemy = dynamic_cast<Enemy*>(&second);
+            first.get_stats().add_xp(enemy->get_xp_after_death());
+        }
+    }
+}

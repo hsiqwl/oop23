@@ -41,6 +41,7 @@ public:
     Direction get_next_step_mt(const std::pair<size_t, size_t>& from, const std::pair<size_t, size_t>& to, const matrix<Cell*>& map) const;
     void move(Creature& target, Direction direction);
     void attack(Creature& first, Creature& second);
+    void attack_mt(Creature& first, Creature& second, std::shared_mutex& mutex);
     Game_state& get_state();
     Hero_service& get_hero_service();
     Enemy_service& get_enemy_service();

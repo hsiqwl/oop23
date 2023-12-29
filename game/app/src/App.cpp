@@ -24,7 +24,7 @@ void App::start(sf::RenderWindow *window) {
             }
             if (event_occured) {
                 auto start = std::chrono::steady_clock::now();
-                controller.get_service()->act_enemies();
+                controller.get_service()->act_enemies_mt();
                 auto finish = std::chrono::steady_clock::now();
                 auto time = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
                 std::fstream out("timing unparalled.txt", std::ios::app);

@@ -1,6 +1,7 @@
 #include "../include/Creature.h"
 #include <random>
 #include <iostream>
+#include <atomic>
 /*!
  * @brief constructor for a Creature type object, uses default constructor for stats
  * @param name_
@@ -40,13 +41,13 @@ void Creature::deal_dmg(Creature &other) {
  */
 void Creature::receive_dmg(size_t dmg) {
     if(!block_dmg()){
-        int new_hp = get_stats().get_curr_hp() - dmg;
-        stats.set_curr_hp(std::max(0,new_hp));
+        int n = get_stats().get_curr_hp();
+        std::atomic<int> new_hp;
+        new_hp.store(n);
+        new_hp-=dmg;
+        n = new_hp;
+        stats.set_curr_hp(std::max(0,n));
         }
-    else
-    {
-        std::cout<<"blocked damage\n";
-    }
     if(stats.get_curr_hp() == 0)
         die();
 }
